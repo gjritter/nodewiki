@@ -99,12 +99,12 @@ function edit_uri_path(path) {
 }
 
 function get_post_params(req, callback) {
-	var body = "?"
+        var body = ""
 	req.addListener("body", function(chunk) {
 		body += chunk
 	})
 	req.addListener("complete", function() {
-		callback(http.parseUri(body).params)
+		callback({content:unescape(body.substring(8))})
 	})
 }
 

@@ -180,14 +180,29 @@ function test_post_markdown() {
 	})
 }
 
+function test_post_nonascii() {
+	var client = http.createClient(PORT, HOST)
+	var request = client.post("/PageWithNonAscii")
+	start_callback_test()
+	request.sendBody("content=%F6")
+	request.finish(function(response) {
+		test.assertEquals(200, response.statusCode)
+		test.assertEquals("text/html", response.headers["content-type"])
+		assert_response(response, '<html><head><title>PageWithNonAscii</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithNonAscii/edit">Edit</a></li></ul><div id="content"><p>' + unescape('%F6') + '</p></div></body></html>', function() {
+			finish_callback_test()
+		})
+	})
+}
+
 var tests = [
-	test_get_homepage,
-	test_get_notfound,
-	test_edit_notfound,
-	test_edit_homepage,
-	test_post_notfound,
-	test_post_html,
-	test_post_link
+	//test_get_homepage,
+	//test_get_notfound,
+	//test_edit_notfound,
+	//test_edit_homepage,
+	//test_post_notfound,
+	//test_post_html,
+	//test_post_link,
+        test_post_nonascii
 ]
 
 // run the tests
