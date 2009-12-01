@@ -194,6 +194,20 @@ function test_post_nonascii() {
 	})
 }
 
+function test_post_unicode() {
+	var client = http.createClient(PORT, HOST)
+	var request = client.post("/PageWithUnicode")
+	start_callback_test()
+	request.sendBody("content=%26%232325%3B%26%232344%3B%26%232351%3B")
+	request.finish(function(response) {
+		test.assertEquals(200, response.statusCode)
+		test.assertEquals("text/html", response.headers["content-type"])
+		assert_response(response, '<html><head><title>PageWithUnicode</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithUnicode/edit">Edit</a></li></ul><div id="content"><p>' + unescape('%26%232325%3B%26%232344%3B%26%232351%3B') + '</p></div></body></html>', function() {
+			finish_callback_test()
+		})
+	})
+}
+
 function test_post_spaces() {
 	var client = http.createClient(PORT, HOST)
 	var request = client.post("/PageWithSpaces")
@@ -217,6 +231,7 @@ var tests = [
 	test_post_html,
 	test_post_link,
 	test_post_nonascii,
+	test_post_unicode,
 	test_post_spaces
 ]
 
