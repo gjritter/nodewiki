@@ -194,15 +194,30 @@ function test_post_nonascii() {
 	})
 }
 
+function test_post_spaces() {
+	var client = http.createClient(PORT, HOST)
+	var request = client.post("/PageWithSpaces")
+	start_callback_test()
+	request.sendBody("content=This+is+a+test.")
+	request.finish(function(response) {
+		test.assertEquals(200, response.statusCode)
+		test.assertEquals("text/html", response.headers["content-type"])
+		assert_response(response, '<html><head><title>PageWithSpaces</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithSpaces/edit">Edit</a></li></ul><div id="content"><p>This is a test.</p></div></body></html>', function() {
+			finish_callback_test()
+		})
+	})
+}
+
 var tests = [
-	//test_get_homepage,
-	//test_get_notfound,
-	//test_edit_notfound,
-	//test_edit_homepage,
-	//test_post_notfound,
-	//test_post_html,
-	//test_post_link,
-        test_post_nonascii
+	test_get_homepage,
+	test_get_notfound,
+	test_edit_notfound,
+	test_edit_homepage,
+	test_post_notfound,
+	test_post_html,
+	test_post_link,
+	test_post_nonascii,
+	test_post_spaces
 ]
 
 // run the tests

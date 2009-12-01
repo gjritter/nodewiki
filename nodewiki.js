@@ -104,7 +104,7 @@ function get_post_params(req, callback) {
 		body += chunk
 	})
 	req.addListener("complete", function() {
-		callback({content:unescape(body.substring(8))})
+		callback({content:unescape(body.substring(8).replace(/\+/g," "))})
 	})
 }
 
