@@ -77,7 +77,7 @@ function test_get_homepage(teardown) {
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title></title></head><body><ul><li><a href="/">Home</a></li><li><a href="/edit">Edit</a></li></ul><div id="content"><p>Homepage Content</p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -90,7 +90,7 @@ function test_get_notfound() {
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(404, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>NoPageHere</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/NoPageHere/edit">Edit</a></li></ul><div id="content">This page does not exist. Would you like to <a href="/NoPageHere/edit">edit it</a>?</div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -103,7 +103,7 @@ function test_edit_notfound() {
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>NoPageHere</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/NoPageHere/edit">Edit</a></li></ul><div id="content"><form method="post" action="/NoPageHere"><textarea name="content" rows="24" cols="80"></textarea><br><input type="submit" value="Create"></form></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -116,7 +116,7 @@ function test_edit_homepage() {
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title></title></head><body><ul><li><a href="/">Home</a></li><li><a href="/edit">Edit</a></li></ul><div id="content"><form method="post" action="/"><textarea name="content" rows="24" cols="80">Homepage Content</textarea><br><input type="submit" value="Create"></form></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -130,7 +130,7 @@ function test_post_notfound() {
 	request.sendBody("content=Test");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>NoPageHere2</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/NoPageHere2/edit">Edit</a></li></ul><div id="content"><p>Test</p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -144,7 +144,7 @@ function test_post_html() {
 	request.sendBody("content=<p>Test</p>");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithHtml</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithHtml/edit">Edit</a></li></ul><div id="content"><p>&lt;p&gt;Test&lt;/p&gt;</p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -158,7 +158,7 @@ function test_post_link() {
 	request.sendBody("content=[Test]");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithLink</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithLink/edit">Edit</a></li></ul><div id="content"><p><a href="/Test">Test</a></p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -172,7 +172,7 @@ function test_post_markdown() {
 	request.sendBody("content=# Test");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithMarkdown</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithMarkdown/edit">Edit</a></li></ul><div id="content"><h1>Test</h1></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -186,7 +186,7 @@ function test_post_nonascii() {
 	request.sendBody("content=%F6");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithNonAscii</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithNonAscii/edit">Edit</a></li></ul><div id="content"><p>' + unescape('%F6') + '</p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -200,8 +200,22 @@ function test_post_unicode() {
 	request.sendBody("content=%26%232325%3B%26%232344%3B%26%232351%3B");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithUnicode</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithUnicode/edit">Edit</a></li></ul><div id="content"><p>' + unescape('%26%232325%3B%26%232344%3B%26%232351%3B') + '</p></div></body></html>', function() {
+			finish_callback_test();
+		});
+	});
+}
+
+function test_post_unicodetitle() {
+	var client = http.createClient(PORT, HOST);
+	var request = client.post("/%26%232325%3B%26%232344%3B%26%232351%3B");
+	start_callback_test();
+	request.sendBody("content=%26%232325%3B%26%232344%3B%26%232351%3B");
+	request.finish(function(response) {
+		test.assertEquals(200, response.statusCode);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
+		assert_response(response, '<html><head><title>' + unescape('%26%232325%3B%26%232344%3B%26%232351%3B') + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/%26%232325%3B%26%232344%3B%26%232351%3B/edit">Edit</a></li></ul><div id="content"><p>' + unescape('%26%232325%3B%26%232344%3B%26%232351%3B') + '</p></div></body></html>', function() {
 			finish_callback_test();
 		});
 	});
@@ -214,7 +228,7 @@ function test_post_spaces() {
 	request.sendBody("content=This+is+a+test.");
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
-		test.assertEquals("text/html", response.headers["content-type"]);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
 		assert_response(response, '<html><head><title>PageWithSpaces</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithSpaces/edit">Edit</a></li></ul><div id="content"><p>This is a test.</p></div></body></html>', function() {
 			finish_callback_test();
 		});
@@ -231,6 +245,7 @@ var tests = [
 	test_post_link,
 	test_post_nonascii,
 	test_post_unicode,
+	test_post_unicodetitle,
 	test_post_spaces
 ];
 

@@ -19,8 +19,7 @@ function title(path) {
 	if(/\/edit$/.test(path)) {
 		path = path.substring(0, path.length - 5);
 	}
-	path = path.substring(1);
-	return path;
+	return unescape(path.substring(1));
 }
 
 function key(path) {
@@ -85,7 +84,7 @@ function save_content(key, content, callback) {
 
 function edit_page(res, path, value) {
 	var page = '<html><head><title>' + title(path) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(path) + '">Edit</a></li></ul><div id="content"><form method="post" action="' + key(path) + '"><textarea name="content" rows="24" cols="80">' + (value || '') + '</textarea><br><input type="submit" value="Create"></form></div></body></html>';
-	res.sendHeader(200, {"Content-Type":"text/html","Content-Length":page.length});
+	res.sendHeader(200, {"Content-Type":"text/html; charset=UTF-8","Content-Length":page.length});
 	res.sendBody(page);
 	res.finish();
 }
@@ -93,7 +92,7 @@ function edit_page(res, path, value) {
 function show_page(res, path, value) {
 	var statusCode = value ? 200 : 404;
 	var page = '<html><head><title>' + title(path) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(path) + '">Edit</a></li></ul><div id="content">' + (value || 'This page does not exist. Would you like to <a href="' + edit_uri_path(path) + '">edit it</a>?') + '</div></body></html>';
-	res.sendHeader(statusCode, {"Content-Type":"text/html","Content-Length":page.length});
+	res.sendHeader(statusCode, {"Content-Type":"text/html; charset=UTF-8","Content-Length":page.length});
 	res.sendBody(page);
 	res.finish();
 }
