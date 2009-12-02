@@ -243,5 +243,5 @@ before_all(function() {
 	// tests must complete in 1 second or less
 	setTimeout(function() {
 		after_all();
-	}, 1000);
+	}, 100);
 });
