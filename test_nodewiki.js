@@ -34,7 +34,7 @@ function receive_callback() {
 
 function before_all(f) {
 	nodewiki.db_number = TEST_DB;
-	nodewiki.server.listen(8123);
+	nodewiki.listen(8123);
 	f();
 }
 
@@ -56,7 +56,7 @@ function teardown() {
 }
 
 function after_all() {
-	nodewiki.server.close();
+	nodewiki.close();
 	test.assertEquals(0, pending_callbacks);
 }
 
@@ -235,6 +235,20 @@ function test_post_spaces() {
 	});
 }
 
+function test_post_blockquote() {
+	var client = http.createClient(PORT, HOST);
+	var request = client.post("/PageWithBlockquote");
+	start_callback_test();
+	request.sendBody("content=test%0D%0A%3E+blockquote");
+	request.finish(function(response) {
+		test.assertEquals(200, response.statusCode);
+		test.assertEquals("text/html; charset=UTF-8", response.headers["content-type"]);
+		assert_response(response, '<html><head><title>PageWithBlockquote</title></head><body><ul><li><a href="/">Home</a></li><li><a href="/PageWithBlockquote/edit">Edit</a></li></ul><div id="content"><p>test</p>\n\n<blockquote>\n  <p>blockquote</p>\n</blockquote></div></body></html>', function() {
+			finish_callback_test();
+		});
+	});
+}
+
 var tests = [
 	test_get_homepage,
 	test_get_notfound,
@@ -246,7 +260,8 @@ var tests = [
 	test_post_nonascii,
 	test_post_unicode,
 	test_post_unicodetitle,
-	test_post_spaces
+	test_post_spaces,
+	test_post_blockquote
 ];
 
 // run the tests
