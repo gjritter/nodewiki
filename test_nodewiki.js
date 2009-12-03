@@ -56,7 +56,7 @@ function teardown() {
 }
 
 function after_all() {
-	nodewiki.server.close();
+	nodewiki.close();
 	test.assertEquals(0, pending_callbacks);
 }
 
@@ -243,5 +243,5 @@ before_all(function() {
 	// tests must complete in 1 second or less
 	setTimeout(function() {
 		after_all();
-	}, 1000);
+	}, 100);
 });
