@@ -59,6 +59,9 @@ nodewiki.listen = function() {
 	}
 
 	function format_content(content) {
+		// > at beginning of line starts a blockquote in markdown/showdown
+		content = content.replace(/\r\n([ \t]*)&gt;/g, '\r\n$1>');
+		// convert the markdown/showdown content with local wiki links into html
 		var converter = new showdown.converter();
 		return converter.makeHtml(content).replace(/\[(.*?)\]/g, '<a href="/$1">$1</a>');
 	}
