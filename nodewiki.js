@@ -17,52 +17,38 @@ var client = new redis.Client();
 nodewiki.db_number = 0;
 
 nodewiki.listen = function() {
-	function title(path) {
-		if(/\/edit$/.test(path)) {
-			path = path.substring(0, path.length - 5);
-		}
-		return unescape(path.substring(1));
-	}
+	var converter = new showdown.converter();
 
-	function key(path) {
+	function strip_edit(path) {
 		if(/\/edit$/.test(path)) {
 			path = path.substring(0, path.length - 5);
 		}
-		path = path || "/";
 		return path;
 	}
+	
+	function title(path) { return unescape(strip_edit(path).substring(1)); }
+
+	function key(path) { return strip_edit(path) || "/"; }
 
 	function edit_uri_path(path) {
-		if(/\/edit$/.test(path)) {
-			path = path.substring(0, path.length - 5);
-		}
-		if(path == "/" || path == "") {
-			return "/edit";
-		} else {
-			return path + "/edit";
-		}
+		path = strip_edit(path);
+		return (path == "/" || path == "") ? "/edit" : path + "/edit";
 	}
 
 	// model
 
 	function get_content(key, callback) {
-		client.get(key).addCallback(function(value) {
-			callback(value);
-		});
+		client.get(key).addCallback(function(value) { callback(value); });
 	}
 
 	function set_content(key, content, callback) {
-		client.set(key, content).addCallback(function() {
-			callback();
-		});
+		client.set(key, content).addCallback(function() { callback(); });
 	}
 
 	function format_content(content) {
-		// > at beginning of line starts a blockquote in markdown/showdown
-		content = content.replace(/\r\n([ \t]*)&gt;/g, '\r\n$1>');
 		// convert the markdown/showdown content with local wiki links into html
-		var converter = new showdown.converter();
-		return converter.makeHtml(content).replace(/\[(.*?)\]/g, '<a href="/$1">$1</a>');
+		// > at beginning of line starts a blockquote in markdown/showdown
+		return converter.makeHtml(content.replace(/\r\n([ \t]*)&gt;/g, '\r\n$1>')).replace(/\[(.*?)\]/g, '<a href="/$1">$1</a>');
 	}
 
 	function save_content(key, content, callback) {
@@ -94,38 +80,39 @@ nodewiki.listen = function() {
 
 	function get_post_params(req, callback) {
 		var body = "";
-		req.addListener("body", function(chunk) {
-			body += chunk;
-		});
-		req.addListener("complete", function() {
-			callback({content:unescape(body.substring(8).replace(/\+/g," "))});
+		req.addListener("body", function(chunk) { body += chunk; }).addListener("complete", function() {
+			callback(unescape(body.substring(8).replace(/\+/g," ")));
 		});
 	}
+	
+	function request_handler(req, res) {
+		if(req.method == "GET") {
+			if(/\/edit$/.test(req.uri.path)) {
+				get_content(key(req.uri.path), function(value) {
+					edit_page(res, req.uri.path, value);
+				});
+			} else {
+				get_content(key(req.uri.path) + ":formatted", function(value) {
+					show_page(res, req.uri.path, value);
+				});
+			}
+		} else {
+			get_post_params(req, function(content) {
+				save_content(key(req.uri.path), content, function() {
+					get_content(key(req.uri.path) + ":formatted", function(value) {
+						show_page(res, req.uri.path, value);
+					});
+				});
+			});
+		}
+	}
 
+	// create and return the listen function
+	
 	return function(port, host) {
 		client.connect(function() {
 			client.select(nodewiki.db_number).addCallback(function() {
-				server.addListener("request", function(req, res) {
-					if(req.method == "GET") {
-						if(/\/edit$/.test(req.uri.path)) {
-							get_content(key(req.uri.path), function(value) {
-								edit_page(res, req.uri.path, value);
-							});
-						} else {
-							get_content(key(req.uri.path) + ":formatted", function(value) {
-								show_page(res, req.uri.path, value);
-							});
-						}
-					} else {
-						get_post_params(req, function(params) {
-							save_content(key(req.uri.path), params.content, function() {
-								get_content(key(req.uri.path) + ":formatted", function(value) {
-									show_page(res, req.uri.path, value);
-								});
-							});
-						});
-					}
-				});
+				server.addListener("request", request_handler);
 			});
 		});
 		server.listen(port, host);
