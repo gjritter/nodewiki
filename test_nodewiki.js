@@ -34,7 +34,7 @@ function receive_callback() {
 
 function before_all(f) {
 	nodewiki.db_number = TEST_DB;
-	nodewiki.server.listen(8123);
+	nodewiki.listen(8123);
 	f();
 }
 

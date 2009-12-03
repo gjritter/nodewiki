@@ -1,4 +1,4 @@
 /*global require */
 var nodewiki = require("./nodewiki");
 
-nodewiki.server.listen(8000);
+nodewiki.listen(8000);
