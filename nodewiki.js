@@ -8,6 +8,7 @@ var sys = require("sys");
 var http = require("http");
 var redis = require("./redis");
 var showdown = require("./showdown");
+require("./nerve");
 
 var nodewiki = exports;
 
@@ -19,26 +20,14 @@ nodewiki.db_number = 0;
 nodewiki.listen = function() {
 	var converter = new showdown.converter();
 
-	function strip_edit(path) {
-		if(/\/edit$/.test(path)) {
-			path = path.substring(0, path.length - 5);
-		}
-		return path;
-	}
-	
-	function title(path) { return unescape(strip_edit(path).substring(1)); }
+	function title(key) { return unescape(key.substring(1)); }
 
-	function key(path) { return strip_edit(path) || "/"; }
-
-	function edit_uri_path(path) {
-		path = strip_edit(path);
-		return (path == "/" || path == "") ? "/edit" : path + "/edit";
-	}
+	function edit_uri_path(key) { return key == "/" ? "/edit" : key + "/edit"; }
 
 	// model
 
 	function get_content(key, callback) {
-		client.get(key).addCallback(function(value) { callback(value); });
+		client.get(key == "" ? "/" : key).addCallback(function(value) { callback(value); });
 	}
 
 	function set_content(key, content, callback) {
@@ -61,16 +50,16 @@ nodewiki.listen = function() {
 
 	// views
 
-	function edit_page(res, path, value) {
-		var page = '<html><head><title>' + title(path) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(path) + '">Edit</a></li></ul><div id="content"><form method="post" action="' + key(path) + '"><textarea name="content" rows="24" cols="80">' + (value || '') + '</textarea><br><input type="submit" value="Create"></form></div></body></html>';
+	function edit_page(res, key, value) {
+		var page = '<html><head><title>' + title(key) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(key) + '">Edit</a></li></ul><div id="content"><form method="post" action="' + (key == "" ? "/" : key) + '"><textarea name="content" rows="24" cols="80">' + (value || '') + '</textarea><br><input type="submit" value="Create"></form></div></body></html>';
 		res.sendHeader(200, {"Content-Type":"text/html; charset=UTF-8","Content-Length":page.length});
 		res.sendBody(page);
 		res.finish();
 	}
 
-	function show_page(res, path, value) {
+	function show_page(res, key, value) {
 		var statusCode = value ? 200 : 404;
-		var page = '<html><head><title>' + title(path) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(path) + '">Edit</a></li></ul><div id="content">' + (value || 'This page does not exist. Would you like to <a href="' + edit_uri_path(path) + '">edit it</a>?') + '</div></body></html>';
+		var page = '<html><head><title>' + title(key) + '</title></head><body><ul><li><a href="/">Home</a></li><li><a href="' + edit_uri_path(key) + '">Edit</a></li></ul><div id="content">' + (value || 'This page does not exist. Would you like to <a href="' + edit_uri_path(key) + '">edit it</a>?') + '</div></body></html>';
 		res.sendHeader(statusCode, {"Content-Type":"text/html; charset=UTF-8","Content-Length":page.length});
 		res.sendBody(page);
 		res.finish();
@@ -84,42 +73,35 @@ nodewiki.listen = function() {
 			callback(unescape(body.substring(8).replace(/\+/g," ")));
 		});
 	}
-	
-	function request_handler(req, res) {
-		if(req.method == "GET") {
-			if(/\/edit$/.test(req.uri.path)) {
-				get_content(key(req.uri.path), function(value) {
-					edit_page(res, req.uri.path, value);
-				});
-			} else {
-				get_content(key(req.uri.path) + ":formatted", function(value) {
-					show_page(res, req.uri.path, value);
-				});
-			}
-		} else {
-			get_post_params(req, function(content) {
-				save_content(key(req.uri.path), content, function() {
-					get_content(key(req.uri.path) + ":formatted", function(value) {
-						show_page(res, req.uri.path, value);
-					});
-				});
-			});
-		}
-	}
 
 	// create and return the listen function
 	
 	return function(port, host) {
 		client.connect(function() {
 			client.select(nodewiki.db_number).addCallback(function() {
-				server.addListener("request", request_handler);
+				[
+					[/^(.*)\/edit$/, function(req, res, key) {
+						get_content(key, function(value) {
+							edit_page(res, key, value);
+						});
+					}],
+					[/^(.*)$/, function(req, res, key) {
+						if(req.method == "GET") {
+							get_content(key + ":formatted", function(value) {
+								show_page(res, key, value);
+							});
+						} else {
+							get_post_params(req, function(content) {
+								save_content(key, content, function() {
+									get_content(key + ":formatted", function(value) {
+										show_page(res, key, value);
+									});
+								});
+							});
+						}
+					}]
+				].serve(port, host);
 			});
 		});
-		server.listen(port, host);
 	};
 }();
-
-nodewiki.close = function() {
-	client.close();
-	server.close();
-};

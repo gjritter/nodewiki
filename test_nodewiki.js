@@ -56,8 +56,8 @@ function teardown() {
 }
 
 function after_all() {
-	nodewiki.close();
 	test.assertEquals(0, pending_callbacks);
+	process.exit();
 }
 
 function start_callback_test() {
