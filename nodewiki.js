@@ -85,20 +85,19 @@ nodewiki.listen = function() {
 							edit_page(res, key, value);
 						});
 					}],
-					[/^(.*)$/, function(req, res, key) {
-						if(req.method == "GET") {
-							get_content(key + ":formatted", function(value) {
-								show_page(res, key, value);
-							});
-						} else {
-							get_post_params(req, function(content) {
-								save_content(key, content, function() {
-									get_content(key + ":formatted", function(value) {
-										show_page(res, key, value);
-									});
+					[get(/^(.*)$/), function(req, res, key) {
+						get_content(key + ":formatted", function(value) {
+							show_page(res, key, value);
+						});
+					}],
+					[post(/^(.*)$/), function(req, res, key) {
+						get_post_params(req, function(content) {
+							save_content(key, content, function() {
+								get_content(key + ":formatted", function(value) {
+									show_page(res, key, value);
 								});
 							});
-						}
+						});
 					}]
 				].serve(port, host);
 			});
