@@ -73,7 +73,7 @@ function finish_callback_test() {
 
 function test_get_homepage(teardown) {
 	var client = http.createClient(PORT, HOST);
-	var request = client.get("/");
+	var request = client.request("GET", "/");
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
@@ -86,7 +86,7 @@ function test_get_homepage(teardown) {
 
 function test_get_notfound() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.get("/NoPageHere");
+	var request = client.request("GET", "/NoPageHere");
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(404, response.statusCode);
@@ -99,7 +99,7 @@ function test_get_notfound() {
 
 function test_edit_notfound() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.get("/NoPageHere/edit");
+	var request = client.request("GET", "/NoPageHere/edit");
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
@@ -112,7 +112,7 @@ function test_edit_notfound() {
 
 function test_edit_homepage() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.get("/edit");
+	var request = client.request("GET", "/edit");
 	start_callback_test();
 	request.finish(function(response) {
 		test.assertEquals(200, response.statusCode);
@@ -125,7 +125,7 @@ function test_edit_homepage() {
 
 function test_post_notfound() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/NoPageHere2");
+	var request = client.request("POST", "/NoPageHere2");
 	start_callback_test();
 	request.sendBody("content=Test");
 	request.finish(function(response) {
@@ -139,7 +139,7 @@ function test_post_notfound() {
 
 function test_post_html() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithHtml");
+	var request = client.request("POST", "/PageWithHtml");
 	start_callback_test();
 	request.sendBody("content=<p>Test</p>");
 	request.finish(function(response) {
@@ -153,7 +153,7 @@ function test_post_html() {
 
 function test_post_link() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithLink");
+	var request = client.request("POST", "/PageWithLink");
 	start_callback_test();
 	request.sendBody("content=[Test]");
 	request.finish(function(response) {
@@ -167,7 +167,7 @@ function test_post_link() {
 
 function test_post_markdown() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithMarkdown");
+	var request = client.request("POST", "/PageWithMarkdown");
 	start_callback_test();
 	request.sendBody("content=# Test");
 	request.finish(function(response) {
@@ -181,7 +181,7 @@ function test_post_markdown() {
 
 function test_post_nonascii() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithNonAscii");
+	var request = client.request("POST", "/PageWithNonAscii");
 	start_callback_test();
 	request.sendBody("content=%F6");
 	request.finish(function(response) {
@@ -195,7 +195,7 @@ function test_post_nonascii() {
 
 function test_post_unicode() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithUnicode");
+	var request = client.request("POST", "/PageWithUnicode");
 	start_callback_test();
 	request.sendBody("content=%26%232325%3B%26%232344%3B%26%232351%3B");
 	request.finish(function(response) {
@@ -209,7 +209,7 @@ function test_post_unicode() {
 
 function test_post_unicodetitle() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/%26%232325%3B%26%232344%3B%26%232351%3B");
+	var request = client.request("POST", "/%26%232325%3B%26%232344%3B%26%232351%3B");
 	start_callback_test();
 	request.sendBody("content=%26%232325%3B%26%232344%3B%26%232351%3B");
 	request.finish(function(response) {
@@ -223,7 +223,7 @@ function test_post_unicodetitle() {
 
 function test_post_spaces() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithSpaces");
+	var request = client.request("POST", "/PageWithSpaces");
 	start_callback_test();
 	request.sendBody("content=This+is+a+test.");
 	request.finish(function(response) {
@@ -237,7 +237,7 @@ function test_post_spaces() {
 
 function test_post_blockquote() {
 	var client = http.createClient(PORT, HOST);
-	var request = client.post("/PageWithBlockquote");
+	var request = client.request("POST", "/PageWithBlockquote");
 	start_callback_test();
 	request.sendBody("content=test%0D%0A%3E+blockquote");
 	request.finish(function(response) {
